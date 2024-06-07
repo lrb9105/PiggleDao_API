@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<query>
+  <!-- 주가 예측글 작성 -->
+  <createForecastPost>
+    insert into stock_price_forecast_post ( forecast_date, 
+                                            stock_code, 
+                                            stock_type,
+                                            expectation_price,
+                                            title,
+                                            writer_addr,
+                                            is_voting_yn,
+                                            file_hashs,
+                                            app_id,
+                                            preview_text,
+                                            contents_hash,
+                                            type,
+                                            cre_datetime) 
+    values (?)
+  </createForecastPost>
+
+  <!-- 주가 예측글 조회(조건 없음) -->
+  <selectForecastPostList>
+    select spfp.voting_post_no, 
+           spfp.forecast_date, 
+           spfp.stock_code, 
+           spfp.stock_type, 
+           spfp.expectation_price, 
+           spfp.title, 
+           spfp.contents_hash, 
+           spfp.writer_addr, 
+           spfp.is_voting_yn, 
+           spfp.file_hashs,
+           spfp.app_id,
+           spfp.preview_text,
+           spfp.type,
+           date_format(spfp.cre_datetime, '%Y-%m-%d %H:%i') cre_datetime,
+           date_format(spfp.upd_datetime, '%Y-%m-%d %H:%i') upd_datetime,
+           ui.user_name,
+           ui.user_profile_hash
+    from stock_price_forecast_post spfp
+    inner join user_info ui on spfp.writer_addr = ui.user_addr
+  </selectForecastPostList>
+
+  <!-- 가장 큰 voting_post_no 조회-->
+  <selectMaxVotingPostNo>
+    select max(spfp.voting_post_no) voting_post_no
+    from stock_price_forecast_post spfp
+  </selectMaxVotingPostNo>
+
+  <!-- [조건] 예측날짜 & 종목코드 -->
+  <conditionForecastDateAndStockCode>
+    where spfp.forecast_date = ? and spfp.stock_type = ? 
+  </conditionForecastDateAndStockCode>
+
+  <!-- [조건] 종목명, 제목, 종목코드, 작성자 닉네임 -->
+  <conditionStockNameCodeTitleUserName>
+    inner join stock_info si on spfp.stock_code = si.stock_code
+    where si.stock_name like ?
+    or spfp.title like ?
+    or spfp.stock_code like ?
+    or ui.user_name like ?
+  </conditionStockNameCodeTitleUserName>
+
+  <!-- [조건] 게시글 번호 -->
+  <conditionPostNo>
+    where spfp.voting_post_no = ?
+  </conditionPostNo>
+
+  <!-- [정렬] 예측날짜 & 종목코드 -->
+  <orderByStockCode>
+    order by spfp.is_voting_yn desc, spfp.stock_code
+  </orderByStockCode>
+
+    <!-- [조건] 투표 여부 -->
+  <conditionIsVotingYn>
+    where spfp.is_voting_yn = ?
+  </conditionIsVotingYn>
+
+  <!-- [정렬] 예측날짜 desc & type -->
+  <orderByForecastDateDesc>
+    order by spfp.forecast_date desc, is_voting_yn desc, stock_type
+  </orderByForecastDateDesc>
+
+  <!-- [페이징] 페이징 숫자 -->
+  <paging>
+    limit ?, ?
+  </paging>
+
+  <!-- 예측날짜에 작성된 모든 글의 종목코드 조회 -->
+  <selectStockCodeListByDate>
+    select distinct stock_code
+    from stock_price_forecast_post where forecast_date = ? order by stock_code
+  </selectStockCodeListByDate>
+
+  <!-- 주식가격 예측글 수정(url, 미리보기 텍스트) -->
+  <updateForecastPost>
+    update stock_price_forecast_post 
+    set contents_hash = ?,
+        file_hashs = ?,
+        preview_text = ?,
+        upd_datetime = ?
+    where voting_post_no = ?
+  </updateForecastPost>
+
+  <!-- 투표기간이 끝난 게시글 is_voting_yn = 'n'으로 변경 -->
+  <changeForecastPostInfo>
+    update stock_price_forecast_post
+    set is_voting_yn = 'n'
+    where forecast_date = ?
+  </changeForecastPostInfo>
+  
+  <!-- [조건] 시가/종가 타입 -->
+  <conditionStockType>
+    and stock_type = ?
+  </conditionStockType>
+
+  <!-- 주식가격 예측글 삭제 -->
+  <deleteForecastPost>
+    delete from stock_price_forecast_post
+    where voting_post_no = ?
+  </deleteForecastPost>
+</query>

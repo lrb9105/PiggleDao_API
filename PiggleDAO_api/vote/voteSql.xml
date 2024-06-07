@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<query>
+  <insertVoteInfo>
+    insert into voter_list (app_id, post_type, voter_address, up_or_down) values (?)  
+  </insertVoteInfo>
+
+  <!-- 특정 app_id에 투표한 모든 사용자 조회-->
+  <selectVoterList>
+    select  vl.app_id,
+            vl.post_type,
+            vl.voter_address,
+            vl.up_or_down,
+            ui.user_name
+    from voter_list vl
+    inner join user_info ui on vl.voter_address = ui.user_addr
+    where app_id = ?
+  </selectVoterList>
+
+  <!-- 특정 사용자가 app_id에 투표했는지 여부 확인-->
+  <selectIsVoting>
+    select  app_id
+    from voter_list 
+    where app_id = ? and voter_address = ?
+  </selectIsVoting>
+
+  <!-- [페이징] 페이징 숫자 -->
+  <paging>
+    limit ?, ?
+  </paging>
+</query>

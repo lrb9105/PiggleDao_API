@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<query>
+  <createRanking>
+    insert into analysis_post_ranking (app_id, analysis_post_rank) values ?
+  </createRanking>
+
+  <!-- 분석글 생성 -->
+  <createAnalysisPost>
+    insert analysis_post ( 	analysis_post_cre_date, 
+                            title, 
+                            contents_hash,
+                            writer_addr,
+                            is_voting_yn,
+                            stock_code,
+                            file_hashs,
+                            vote_exp_date,
+                            app_id,
+                            analysis_type,
+                            preview_text,
+                            cre_datetime,
+                            type) 
+    values (?)
+  </createAnalysisPost>
+
+  <!-- 분석글 리스트 조회(조건 없음)-->
+  <selectAnalysisPostList>
+    select 	ap.analysis_post_no, 
+            ap.analysis_post_cre_date, 
+            ap.title, 
+            ap.contents_hash,
+            ap.writer_addr,
+            ap.is_voting_yn,
+            ap.stock_code,
+            ap.file_hashs,
+            ap.vote_exp_date,
+            ap.app_id,
+            ap.analysis_type,
+            ap.preview_text,
+            ap.type,
+            date_format(ap.cre_datetime, '%Y-%m-%d %H:%i') cre_datetime,
+            date_format(ap.upd_datetime, '%Y-%m-%d %H:%i') upd_datetime,
+            ui.user_name,
+            ui.user_profile_hash
+    from analysis_post ap
+    inner join user_info ui on ap.writer_addr = ui.user_addr
+  </selectAnalysisPostList>
+
+  <!-- 가장 큰 analysis_post_no 조회-->
+  <selectMaxAnalysisPostNo>
+    select max(ap.analysis_post_no) analysis_post_no
+    from analysis_post ap
+  </selectMaxAnalysisPostNo>
+
+  <!-- [조건] 투표 종료일 -->
+  <conditionVotingExpDate>
+    where vote_exp_date = ?
+  </conditionVotingExpDate>
+
+   <!-- [조건] 종목명, 종목코드,제목, 작성자 닉네임 -->
+  <conditionStockNameCodeTitleUserName>
+    inner join stock_info si on ap.stock_code = si.stock_code
+    where si.stock_name like ?
+    or ap.title like ?
+    or ap.stock_code like ?
+    or ui.user_name like ?
+  </conditionStockNameCodeTitleUserName>
+
+    <!-- [조건] 게시글 번호 -->
+  <conditionAnalysisNo>
+    where ap.analysis_post_no = ?
+  </conditionAnalysisNo>
+
+  <!-- [조건] 투표 여부 -->
+  <conditionIsVotingYn>
+    where ap.is_voting_yn = ?
+  </conditionIsVotingYn>
+
+  <!-- [정렬] 투표종료일 desc & type -->
+  <orderByVotingExpDateDesc>
+    order by ap.is_voting_yn desc, ap.vote_exp_date desc, ap.stock_code
+  </orderByVotingExpDateDesc>
+
+  <!-- [페이징] 페이징 숫자 -->
+  <paging>
+    limit ?, ?
+  </paging>
+
+  <!-- 분석글 수정(url, 미리보기 텍스트) -->
+  <updateAnalysisPost>
+    update analysis_post 
+    set contents_hash = ?,
+        file_hashs = ?,
+        preview_text = ?,
+        upd_datetime = ?
+    where analysis_post_no = ?
+  </updateAnalysisPost>
+
+  <!-- 투표기간이 끝난 게시글 is_voting_yn = 'n'으로 변경 -->
+  <changeAnalysisPostInfo>
+    update analysis_post 
+    set is_voting_yn = 'n'
+    where vote_exp_date = ?
+  </changeAnalysisPostInfo>
+
+  <!-- 분석글 삭제 -->
+  <deleteAnalysisPost>
+    delete from analysis_post
+    where analysis_post_no = ?
+  </deleteAnalysisPost>
+
+  <!-- 분석글 삭제 -->
+  <deleteRanking>
+    delete from analysis_post_ranking
+  </deleteRanking>
+</query>

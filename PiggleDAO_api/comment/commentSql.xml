@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<query>
+  <!-- 댓글 작성 -->
+  <createComment>
+    insert into comment (post_no, 
+                         writer_addr, 
+                         cre_datetime, 
+                         comment_contents, 
+                         post_type)
+    values(?)
+  </createComment>
+
+  <!-- 가장 큰 comment_no 조회-->
+  <selectMaxCommentNo>
+    select max(c.comment_no) comment_no
+    from comment c
+  </selectMaxCommentNo>
+
+  <!-- 특정 게시글의 댓글 리스트 조회 -->
+  <selectCommentList>
+    select  c.comment_no,
+            c.post_no,
+            c.writer_addr,
+            date_format(c.cre_datetime, '%Y-%m-%d %H:%i') cre_datetime,
+            date_format(c.upd_datetime, '%Y-%m-%d %H:%i') upd_datetime,
+            c.comment_contents,
+            c.post_type,
+            ui.user_name,
+            ui.user_profile_hash
+    from comment c
+    inner join user_info ui on c.writer_addr = ui.user_addr
+    where post_no = ?
+    and post_type = ?
+  </selectCommentList>
+
+  <!-- [정렬] CommentCreDatetime -->
+  <orderByCommentCreDatetime>
+    order by c.cre_datetime
+  </orderByCommentCreDatetime>
+
+  <!-- 댓글 수정 -->
+  <updateComment>
+    update comment set comment_contents = ?,
+				               upd_datetime = ?
+    where comment_no = ?
+  </updateComment>
+
+  <!-- 주식가격 예측글 삭제 -->
+  <deleteComment>
+    delete from comment
+    where comment_no = ?
+  </deleteComment>
+</query>

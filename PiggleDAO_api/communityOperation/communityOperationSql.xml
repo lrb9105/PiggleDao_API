@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<query>
+  <!-- 커뮤니티 운영 게시글 작성 -->
+  <createCommunityOperationPost>
+    insert community_operation_post ( voting_srt_date, 
+                                      voting_end_date, 
+                                      title,
+                                      contents_hash,
+                                      writer_addr,
+                                      is_voting_yn,
+                                      file_hashs,
+                                      app_id,
+                                      preview_text,
+                                      type,
+                                      cre_datetime
+                                      ) 
+    values (?)
+  </createCommunityOperationPost>
+
+<!-- 커뮤니티 운영 게시글 리스트 조회(조건 없음)-->
+  <selectCommunityOperationPostList>
+    select cop.community_operation_post_no, 
+           cop.voting_srt_date, 
+           cop.voting_end_date, 
+           cop.title, 
+           cop.contents_hash,
+           cop.writer_addr,
+           cop.is_voting_yn,
+           cop.file_hashs,
+           cop.app_id,
+           cop.preview_text,
+           cop.type,
+           date_format(cop.cre_datetime, '%Y-%m-%d %H:%i') cre_datetime,
+           date_format(cop.upd_datetime, '%Y-%m-%d %H:%i') upd_datetime,
+           ui.user_name,
+           ui.user_profile_hash
+    from community_operation_post cop
+    inner join user_info ui on cop.writer_addr = ui.user_addr
+  </selectCommunityOperationPostList>
+
+  <!-- 가장 큰 community_operation_post_no 조회-->
+  <selectMaxCommunityOperationNo>
+    select max(cop.community_operation_post_no) community_operation_post_no
+    from community_operation_post cop
+  </selectMaxCommunityOperationNo>
+
+<!-- [조건] voting_end_date-->
+  <conditionVotingEndDate>
+    where voting_end_date = ?
+  </conditionVotingEndDate>
+
+  <!-- [조건] 종목명, 제목, 종목코드, 작성자 닉네임 -->
+  <conditionTitleUserName>
+    where cop.title like ?
+    or ui.user_name like ?
+  </conditionTitleUserName>
+
+  <!-- [조건] 투표 여부 -->
+  <conditionIsVotingYn>
+    where cop.is_voting_yn = ?
+  </conditionIsVotingYn>
+
+  <!-- [조건] 게시글 번호 -->
+  <conditionCommunityOperationNo>
+    where cop.community_operation_post_no = ?
+  </conditionCommunityOperationNo>
+
+  <!-- [정렬] 종료일이 가장 늦은것 부터 먼저 나오도록 desc & type -->
+  <orderByVotingEndDateDesc>
+    order by cop.is_voting_yn desc, cop.voting_end_date desc, cop.cre_datetime
+  </orderByVotingEndDateDesc>
+
+  <!-- [페이징] 페이징 숫자 -->
+  <paging>
+    limit ?, ?
+  </paging>
+
+  <!-- 커뮤니티 운영글 수정(url, 미리보기 텍스트) -->
+  <updateCommunityOperationPost>
+    update community_operation_post 
+    set contents_hash = ?,
+        file_hashs = ?,
+        preview_text = ?,
+        upd_datetime = ?
+    where community_operation_post_no = ?
+  </updateCommunityOperationPost>
+
+  <!-- 투표기간이 끝난 게시글 is_voting_yn = 'n'으로 변경 -->
+  <changeCommunityOperationPostInfo>
+    update community_operation_post 
+    set is_voting_yn = 'n'
+    where voting_end_date = ?
+  </changeCommunityOperationPostInfo>
+
+  <!-- 커뮤니티 운영글 삭제 -->
+  <deleteCommunityOperationPost>
+    delete from community_operation_post
+    where community_operation_post_no = ?
+  </deleteCommunityOperationPost>
+</query>

@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<query>
+  <createUserInfo>
+    insert into user_info (user_addr, user_name, user_profile_hash) values (?)
+  </createUserInfo>
+
+  <selectIsExist>
+    select user_addr from user_info where user_addr = ?
+  </selectIsExist>
+
+  <selectCount>
+    select count(*) count from user_info
+  </selectCount>
+
+  <selectUserInfo>
+    select * from user_info where user_addr = ?
+  </selectUserInfo>
+
+  <selectAllPost>
+    select *  
+    from (select spfp.voting_post_no, 
+                spfp.type,
+                spfp.forecast_date, 
+                spfp.stock_code, 
+                spfp.stock_type, 
+                spfp.expectation_price, 
+                spfp.title, 
+                spfp.contents_hash, 
+                spfp.writer_addr, 
+                spfp.is_voting_yn, 
+                spfp.file_hashs,
+                spfp.app_id,
+                null vote_exp_date,
+                null analysis_type,
+                spfp.preview_text,
+                date_format(spfp.cre_datetime, '%Y-%m-%d %H:%i') cre_datetime,
+                date_format(spfp.upd_datetime, '%Y-%m-%d %H:%i') upd_datetime,
+                ui.user_name,
+                ui.user_profile_hash,
+                null voting_srt_date,
+                null voting_end_date
+      from stock_price_forecast_post spfp
+      inner join user_info ui on spfp.writer_addr = ui.user_addr
+      union 
+      select 	   ap.analysis_post_no, 
+                ap.type,
+                ap.analysis_post_cre_date, 
+                ap.stock_code, 
+                null stock_type, 
+                null expectation_price, 
+                ap.title, 
+                ap.contents_hash, 
+                ap.writer_addr, 
+                ap.is_voting_yn, 
+                ap.file_hashs,
+                ap.app_id,
+                ap.vote_exp_date,
+                ap.analysis_type,
+                ap.preview_text,
+                date_format(ap.cre_datetime, '%Y-%m-%d %H:%i') cre_datetime,
+                date_format(ap.upd_datetime, '%Y-%m-%d %H:%i') upd_datetime,
+                ui.user_name,
+                ui.user_profile_hash,
+                null voting_srt_date,
+                null voting_end_date
+      from analysis_post ap
+      inner join user_info ui on ap.writer_addr = ui.user_addr
+      union 
+      select 	   cop.community_operation_post_no, 
+                cop.type,
+                null analysis_post_cre_date, 
+                null stock_code, 
+                null stock_type, 
+                null expectation_price, 
+                cop.title, 
+                cop.contents_hash, 
+                cop.writer_addr, 
+                cop.is_voting_yn, 
+                cop.file_hashs,
+                cop.app_id,
+                null vote_exp_date,
+                null analysis_type,
+                cop.preview_text,
+                date_format(cop.cre_datetime, '%Y-%m-%d %H:%i') cre_datetime,
+                date_format(cop.upd_datetime, '%Y-%m-%d %H:%i') upd_datetime,
+                ui.user_name,
+                ui.user_profile_hash,
+                cop.voting_srt_date,
+                cop.voting_end_date
+      from community_operation_post cop
+      inner join user_info ui on cop.writer_addr = ui.user_addr) all_post
+  </selectAllPost>
+
+  <!-- [조건] 계정 주소 -->
+  <conditionWriter_addr>
+    where writer_addr = ? 
+  </conditionWriter_addr>
+
+    <!-- [조건] 제목, 작성자 닉네임 -->
+  <conditionTitleUserName>
+    where title like ?
+    or user_name like ?
+  </conditionTitleUserName>
+
+  <!-- [정렬] 투표여부 & 생성시간 -->
+  <orderVotingYnCreDatetime>
+    order by is_voting_yn desc, cre_datetime desc  
+  </orderVotingYnCreDatetime>
+
+  <!-- [페이징] 페이징 숫자 -->
+  <paging>
+    limit ?, ?
+  </paging>
+
+  <updateUserProfile>
+    update user_info set user_profile_hash = ? where user_addr = ?
+  </updateUserProfile>
+
+  <deleteUserInfo>
+    delete from user_info where user_addr = ?
+  </deleteUserInfo>
+</query>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<query>
+  <createStakingInfo>
+    insert into staking_info (app_id, exp_date, staking_price, staker_addr) values (?)
+  </createStakingInfo>
+
+  <selectIsExist>
+    select user_addr from user_info where user_addr = ?
+  </selectIsExist>
+
+  <selectUserInfo>
+    select * from user_info where user_addr = ?
+  </selectUserInfo>
+
+  <updateUserProfile>
+    update user_info set user_profile_hash = ? where user_addr = ?
+  </updateUserProfile>
+
+  <deleteUserInfo>
+    delete from user_info where user_addr = ?
+  </deleteUserInfo>
+</query>

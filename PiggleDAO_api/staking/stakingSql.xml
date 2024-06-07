@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<query>
+  <createStakingInfo>
+    insert into staking_info (app_id, exp_date, staking_price, staker_addr, type) values (?)
+  </createStakingInfo>
+
+  <selectStakingInfoListByDate>
+    select  app_id,
+            exp_date,
+            staking_price,
+            staker_addr,
+            type
+    from staking_info
+    where exp_date = ?
+  </selectStakingInfoListByDate>
+
+  <deleteStakingInfo>
+    delete
+    from staking_info
+    where exp_date = ?
+  </deleteStakingInfo>
+</query>

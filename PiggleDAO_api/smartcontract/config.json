@@ -1,0 +1,14 @@
+{
+    "SmartContractParams" : {
+        "dev_address":"", 
+        "dev_mnemonic" : "",
+        "token" :"",
+        "ip_address":"",
+        "port":"4165",
+        "token_id" : "4",
+        "bubbly_token_id" : "282",
+        "staking_mnemonic" : "",
+        "staking_addr": ""
+    },
+    "ipfs_gateway": ""
+}
